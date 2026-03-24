@@ -30,10 +30,10 @@ if sys.platform == "win32":
 
 class PersonaDashboard:
     """Web dashboard for persona collaboration"""
-    
+
     def __init__(self):
         self.state_file = WORKSPACE / "20-data-reports" / "persona_state.json"
-    
+
     def get_state(self) -> Dict:
         """Load current persona state"""
         if self.state_file.exists():
@@ -42,7 +42,7 @@ class PersonaDashboard:
                     return json.load(f)
             except:
                 pass
-        
+
         # Default state
         return {
             'personas': {
@@ -58,18 +58,18 @@ class PersonaDashboard:
             'message_count': 0,
             'last_updated': datetime.now().isoformat()
         }
-    
+
     def get_html(self) -> str:
         """Generate dashboard HTML"""
         state = self.get_state()
         personas = state.get('personas', {})
         conflicts = state.get('conflicts', [])
-        
+
         # Calculate overall metrics
         avg_workload = sum(p.get('workload', 0) for p in personas.values()) / max(1, len(personas))
         avg_confidence = sum(p.get('confidence', 0) for p in personas.values()) / max(1, len(personas))
         avg_collab = sum(p.get('collaboration_score', 0) for p in personas.values()) / max(1, len(personas))
-        
+
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -134,11 +134,11 @@ class PersonaDashboard:
                 <div class="metric-label">Avg Workload</div>
             </div>
             <div class="metric-card">
-                <div class="metric-value">{avg_confidence*100:.0f}%</div>
+                <div class="metric-value">{avg_confidence *100:.0f}%</div>
                 <div class="metric-label">Avg Confidence</div>
             </div>
             <div class="metric-card">
-                <div class="metric-value">{avg_collab*100:.0f}%</div>
+                <div class="metric-value">{avg_collab *100:.0f}%</div>
                 <div class="metric-label">Collaboration Score</div>
             </div>
             <div class="metric-card">
@@ -163,7 +163,7 @@ class PersonaDashboard:
                     <h2>Persona States</h2>
                     <div class="persona-grid">
 """
-        
+
         persona_colors = {
             'planner': '#667eea',
             'executor': '#f093fb',
@@ -173,15 +173,15 @@ class PersonaDashboard:
             'innovator': '#fa709a',
             'meta_cognition': '#764ba2'
         }
-        
+
         for role, data in personas.items():
             workload = data.get('workload', 0)
             confidence = data.get('confidence', 0)
             collab = data.get('collaboration_score', 0)
             color = persona_colors.get(role, '#667eea')
-            
+
             workload_class = 'progress-low' if workload < 40 else ('progress-medium' if workload < 70 else 'progress-high')
-            
+
             html += f"""
                         <div class="persona-card" style="border-left: 4px solid {color};">
                             <h3 style="color: {color};">{role.replace('_', ' ').title()}</h3>
@@ -194,15 +194,15 @@ class PersonaDashboard:
                             </div>
                             <div class="stat">
                                 <div class="stat-label">Confidence</div>
-                                <div class="stat-value">{confidence*100:.0f}%</div>
+                                <div class="stat-value">{confidence *100:.0f}%</div>
                             </div>
                             <div class="stat">
                                 <div class="stat-label">Collaboration</div>
-                                <div class="stat-value">{collab*100:.0f}%</div>
+                                <div class="stat-value">{collab *100:.0f}%</div>
                             </div>
                         </div>
 """
-        
+
         html += """
                     </div>
                 </div>
@@ -234,7 +234,7 @@ class PersonaDashboard:
             <div class="card">
                 <h2>Conflict Tracking</h2>
 """
-        
+
         if conflicts:
             for conflict in conflicts:
                 status_class = 'resolved' if conflict.get('status') == 'resolved' else ''
@@ -258,7 +258,7 @@ class PersonaDashboard:
                     <div>No active conflicts</div>
                 </div>
 """
-        
+
         html += """
             </div>
         </div>
@@ -321,17 +321,17 @@ class PersonaDashboard:
     </script>
 </body>
 </html>"""
-        
+
         return html
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
     """HTTP handler for dashboard"""
-    
+
     def __init__(self, *args, dashboard=None, **kwargs):
         self.dashboard = dashboard
         super().__init__(*args, **kwargs)
-    
+
     def do_GET(self):
         """Handle GET requests"""
         if self.path == '/':
@@ -340,18 +340,18 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'text/html')
             self.end_headers()
             self.wfile.write(html.encode('utf-8'))
-        
+
         elif self.path == '/api/state':
             state = self.dashboard.get_state()
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps(state).encode('utf-8'))
-        
+
         else:
             self.send_response(404)
             self.end_headers()
-    
+
     def log_message(self, format, *args):
         """Suppress default logging"""
         pass
@@ -362,24 +362,24 @@ def main():
     parser.add_argument('--serve', action='store_true', help='Start web server')
     parser.add_argument('--port', type=int, default=8083, help='Server port')
     args = parser.parse_args()
-    
+
     dashboard = PersonaDashboard()
-    
+
     if args.serve:
         print(f"\n🎭 Persona Dashboard: http://localhost:{args.port}")
         print("Auto-refresh: 10 seconds")
         print("Press Ctrl+C to stop\n")
-        
+
         def handler(*args, **kwargs):
             DashboardHandler(*args, dashboard=dashboard, **kwargs)
-        
+
         server = HTTPServer(('0.0.0.0', args.port), handler)
-        
+
         try:
             server.serve_forever()
         except KeyboardInterrupt:
             print("\n[DASHBOARD] Stopped")
-    
+
     else:
         parser.print_help()
 
