@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 from slime.utils.processing_utils import load_tokenizer
 from slime.utils.types import Sample
+from slime.utils.message_utils import _flatten_message_content, _normalize_messages_for_template
 
 _GREEN = "\033[32m"
 _YELLOW = "\033[33m"
@@ -31,31 +32,6 @@ _BOXED_RE = re.compile(r"\\boxed\{([-+]?\d)\}")
 _HINT_RE = re.compile(r"\[HINT_START\](.*?)\[HINT_END\]", re.DOTALL)
 
 _NON_STANDARD_BODY_KEYS = {"session_id", "session_done", "turn_type"}
-
-
-def _flatten_message_content(content: str | list | Any) -> str:
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        parts = []
-        for item in content:
-            if isinstance(item, dict) and item.get("type") == "text":
-                parts.append(item.get("text", ""))
-        return " ".join(parts) if parts else ""
-    return str(content) if content is not None else ""
-
-
-def _normalize_messages_for_template(messages: list[dict]) -> list[dict]:
-    out = []
-    for msg in messages:
-        m = dict(msg)
-        if m.get("role") == "developer":
-            m["role"] = "system"
-        raw = m.get("content")
-        if not isinstance(raw, str) and raw is not None:
-            m["content"] = _flatten_message_content(raw)
-        out.append(m)
-    return out
 
 
 def _extract_logprobs_from_chat_response(choice: dict[str, Any]) -> list[float]:
