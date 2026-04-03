@@ -45,6 +45,14 @@ cd slime
 bash ../openclaw-rl/run_qwen3_4b_openclaw_rl.sh
 ```
 
+## Quick Validation (No GPU Required)
+
+```bash
+python openclaw-rl/smoke_test.py
+```
+
+This smoke test verifies the shared message utilities (`_flatten_message_content`, `_normalize_messages_for_template`) without requiring SGLang, GPU, or any external dependencies.
+
 
 
 ## File Structure
