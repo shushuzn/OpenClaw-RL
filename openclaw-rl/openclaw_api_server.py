@@ -30,7 +30,7 @@ _BOXED_RE = re.compile(r"\\boxed\{([-+]?\d)\}")
 _NON_STANDARD_BODY_KEYS = {"session_id", "session_done", "turn_type"}
 
 
-def _flatten_message_content(content):
+def _flatten_message_content(content: str | list | Any) -> str:
     """Extract plain text from multimodal content lists."""
     if isinstance(content, str):
         return content

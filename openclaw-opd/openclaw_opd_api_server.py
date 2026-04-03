@@ -33,7 +33,7 @@ _HINT_RE = re.compile(r"\[HINT_START\](.*?)\[HINT_END\]", re.DOTALL)
 _NON_STANDARD_BODY_KEYS = {"session_id", "session_done", "turn_type"}
 
 
-def _flatten_message_content(content):
+def _flatten_message_content(content: str | list | Any) -> str:
     if isinstance(content, str):
         return content
     if isinstance(content, list):
